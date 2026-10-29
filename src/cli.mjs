@@ -46,6 +46,7 @@ try {
         const op=operations[id];
         if(!op || op.surface!==surface) throw new Error('Unknown operation for this surface.');
         if(op.method!=='GET'&&!values.confirm) throw new Error('This operation changes data. Review the request and pass --confirm to execute.');
+        if(op.method!=='GET'&&!values['idempotency-key']) throw new Error('Partner writes require --idempotency-key with a stable key for this intended operation.');
         const client=surface==='partner'?new JourneyClient({apiKey:process.env.JOURNEY_API_KEY,accessToken:process.env.JOURNEY_PARTNER_TOKEN,baseUrl}):new JourneyMemberClient({accessToken:process.env.JOURNEY_MEMBER_TOKEN,baseUrl});
         result=await client.request(id,{...input,...(values['idempotency-key']?{idempotencyKey:values['idempotency-key']}:{})});
       }

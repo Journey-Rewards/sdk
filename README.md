@@ -2,7 +2,7 @@
 
 Official JavaScript/TypeScript and Python clients, plus the `journey` CLI, for hospitality businesses building with Journey.
 
-**v2 replaces the retired Hive SDK.** It connects to Journey Core's versioned partner APIs, selected member reads, and the Journey MCP server. Existing `JourneyHiveClient` integrations and `jh_` keys must migrate; see [MIGRATION.md](MIGRATION.md). MIT licensed, with no runtime dependencies.
+**v2 replaces the retired Hive SDK.** It connects to Journey Core's versioned partner APIs, selected member reads, and the Journey MCP server. Existing `JourneyHiveClient` integrations and `jh_` keys must migrate; see [MIGRATION.md](https://github.com/Journey-Rewards/sdk/blob/main/MIGRATION.md). MIT licensed, with no runtime dependencies.
 
 ## Get access
 
@@ -24,7 +24,7 @@ Python 3.10 or newer:
 python -m pip install journeyrewards-sdk
 ```
 
-For an unpublished checkout, use `npm pack` and install the resulting tarball, or `python -m pip install .`. Registry availability is verified as part of the [release process](RELEASING.md); a source checkout is not evidence of a published version.
+For an unpublished checkout, use `npm pack` and install the resulting tarball, or `python -m pip install .`. Registry availability is verified as part of the [release process](https://github.com/Journey-Rewards/sdk/blob/main/RELEASING.md); a source checkout is not evidence of a published version.
 
 ## Hospitality partner APIs
 

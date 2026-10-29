@@ -123,6 +123,7 @@ test('CLI lists without credentials, prints version, and requires explicit write
   assert.equal(JSON.parse((await exec(process.execPath,['src/cli.mjs','member','list'],{cwd:root,env})).stdout).length,5);
   const start=seen.length;
   await assert.rejects(exec(process.execPath,['src/cli.mjs','partner','call','loyaltyProgramsPartner_create'],{cwd:root,env}),e=>e.stderr.includes('--confirm')&&!e.stderr.includes('jny_cli'));
+  await assert.rejects(exec(process.execPath,['src/cli.mjs','partner','call','loyaltyProgramsPartner_create','--confirm'],{cwd:root,env}),e=>e.stderr.includes('--idempotency-key'));
   assert.equal(seen.length,start);
   assert.equal(JSON.parse((await exec(process.execPath,['src/cli.mjs','partner','call','loyaltyProgramsPartner_list'],{cwd:root,env})).stdout).key,'jny_cli');
 });
