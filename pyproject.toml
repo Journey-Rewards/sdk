@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "journeyrewards-sdk"
+version = "2.0.0"
+description = "Official Journey SDK for hospitality loyalty, member APIs and MCP"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{name = "Journey Rewards", email = "alliance@journey.com"}]
+dependencies = []
+
+[project.urls]
+Homepage = "https://www.journey.com/developers"
+Documentation = "https://docs.journey.com"
+Repository = "https://github.com/Journey-Rewards/sdk"
+
+[tool.setuptools.packages.find]
+where = ["python"]
+
+[tool.setuptools.package-data]
+journey_rewards = ["operations.json", "py.typed"]

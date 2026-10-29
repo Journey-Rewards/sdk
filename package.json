@@ -1,0 +1,54 @@
+{
+  "name": "@journeyrewards/sdk",
+  "version": "2.0.0",
+  "description": "Official Journey SDK and CLI for hospitality loyalty, member APIs and MCP",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "exports": {
+    ".": {
+      "types": "./src/index.d.ts",
+      "default": "./src/index.mjs"
+    }
+  },
+  "bin": {
+    "journey": "./src/cli.mjs"
+  },
+  "files": [
+    "src",
+    "README.md",
+    "MIGRATION.md",
+    "LICENSE",
+    "contracts/provenance.json"
+  ],
+  "scripts": {
+    "generate": "node scripts/generate.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "test:types": "tsc --strict --noEmit --module NodeNext --moduleResolution NodeNext --target ES2022 tests/types.test.ts",
+    "prepack": "npm run generate && npm test"
+  },
+  "homepage": "https://www.journey.com/developers",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Journey-Rewards/sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Journey-Rewards/sdk/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "journey",
+    "loyalty",
+    "hospitality",
+    "mcp",
+    "sdk",
+    "cli"
+  ],
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}

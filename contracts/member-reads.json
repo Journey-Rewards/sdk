@@ -1,0 +1,7 @@
+{
+  "memberProfile_get": { "path": "/v1/members/me/profile", "query": ["fields"] },
+  "memberMembership_get": { "path": "/v1/members/me/membership", "query": [] },
+  "memberConsents_get": { "path": "/v1/members/me/marketing-consents", "query": [] },
+  "memberWallet_get": { "path": "/v1/members/me/wallet", "query": [] },
+  "memberWallet_balance": { "path": "/v1/members/me/wallet/balance", "query": [] }
+}
