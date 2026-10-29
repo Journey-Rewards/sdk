@@ -1313,24 +1313,6 @@ export const operations = {
     ],
     "summary": "List domains the page may use"
   },
-  "pagesPartner_uploadFeaturedImage": {
-    "surface": "partner",
-    "method": "POST",
-    "path": "/v1/partner/pages/{pageGroupId}/featured-image",
-    "query": [
-      "organizationId",
-      "state"
-    ],
-    "requiredQuery": [],
-    "hasBody": false,
-    "bodyRequired": false,
-    "scopes": [
-      [
-        "partner:pages:manage"
-      ]
-    ],
-    "summary": "Upload a featured image"
-  },
   "pagesPartner_listMemberGatePrograms": {
     "surface": "partner",
     "method": "GET",
@@ -1625,23 +1607,6 @@ export const operations = {
     ],
     "summary": "Create or replace an entity’s theme kit"
   },
-  "themeKitsPartner_uploadFont": {
-    "surface": "partner",
-    "method": "POST",
-    "path": "/v1/partner/theme-kits/{entityType}/{entityExternalId}/fonts",
-    "query": [
-      "organizationId"
-    ],
-    "requiredQuery": [],
-    "hasBody": false,
-    "bodyRequired": false,
-    "scopes": [
-      [
-        "partner:theme-kits:manage"
-      ]
-    ],
-    "summary": "Upload a font to a theme kit"
-  },
   "themeKitsPartner_deleteFont": {
     "surface": "partner",
     "method": "DELETE",
@@ -1658,23 +1623,6 @@ export const operations = {
       ]
     ],
     "summary": "Delete a font from a theme kit"
-  },
-  "themeKitsPartner_uploadImage": {
-    "surface": "partner",
-    "method": "POST",
-    "path": "/v1/partner/theme-kits/{entityType}/{entityExternalId}/images",
-    "query": [
-      "organizationId"
-    ],
-    "requiredQuery": [],
-    "hasBody": false,
-    "bodyRequired": false,
-    "scopes": [
-      [
-        "partner:theme-kits:manage"
-      ]
-    ],
-    "summary": "Upload a logo or favicon to a theme kit"
   },
   "accessPartner_getUserScope": {
     "surface": "partner",
@@ -1992,6 +1940,11 @@ export const provenance = {
     {
       "change": "Express the Unicode Cc control-character exclusion as equivalent U+0000-U+001F and U+007F-U+009F ranges for JSON Schema validator portability.",
       "source": "AddPoolCodesRequest codes pattern; no validation policy change."
+    },
+    {
+      "change": "Document three multipart bodies omitted by the export and mark these operations outside the JSON-only SDK.",
+      "source": "Core main a424e368: PagesPartnerController.uploadFeaturedImage, ThemeKitsPartnerController.uploadFont/uploadImage and their multipart utilities. Current replay digest consumes request.body before streamed file parsing."
     }
-  ]
+  ],
+  "sdkCoverage": "106 authenticated JSON/no-body partner operations and five member reads. Three multipart upload routes remain documented but excluded from SDK v2."
 };

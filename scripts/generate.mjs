@@ -25,7 +25,8 @@ function type(s = {}) {
 for (const [path, item] of Object.entries(spec.paths)) {
   if (!path.startsWith('/v1/partner/')) continue;
   for (const [method, op] of Object.entries(item)) {
-    if (!['get', 'post', 'patch', 'put', 'delete'].includes(method)) continue;
+    if (!['get', 'post', 'patch', 'put', 'delete'].includes(method) || op['x-journey-sdk-supported'] === false) continue;
+    if (op.requestBody && !op.requestBody.content?.['application/json']) throw new Error(`Unsupported request encoding: ${op.operationId}`);
     const params = [...(item.parameters || []), ...(op.parameters || [])];
     const body = op.requestBody?.content?.['application/json']?.schema;
     const query = params.filter(p => p.in === 'query');
@@ -68,6 +69,6 @@ for (const [surface, cls] of [['partner','JourneyClient'],['member','JourneyMemb
   for (const id of ids) { const [resource,action]=id.split('_'); const name=resource.replace(/Partner$/,''); (groups[name]??=[]).push(`${action}: (...args: OperationArgs<${JSON.stringify(id)}>) => Promise<Outputs[${JSON.stringify(id)}]>`); }
   declarations += `export type ${surface}Operation = ${ids.map(JSON.stringify).join(' | ')};\nexport class ${cls} {\nconstructor(options: ClientOptions & ${surface==='partner'?'({apiKey: string; accessToken?: never} | {accessToken: string; apiKey?: never})':'{accessToken: string}'});\nrequest<K extends ${surface}Operation>(operationId: K, ...args: OperationArgs<K>): Promise<Outputs[K]>;\n${Object.entries(groups).map(([k,v])=>`${k}: {${v.join('; ')}}`).join(';\n')}\n}\n`;
 }
-declarations += `export { JourneyClient as JourneyPartnerClient };\nexport class JourneyMcpClient { constructor(options?: { endpoint?: string; accessToken?: string; timeoutMs?: number }); request(method: string, params?: Record<string, unknown>): Promise<unknown>; listTools(): Promise<unknown>; callTool(name: string, args?: Record<string, unknown>): Promise<unknown>; }\nexport const operations: Record<keyof Inputs, {surface: string; method: string; path: string; query: string[]; requiredQuery: string[]; scopes: string[][]; summary: string; hasBody: boolean; bodyRequired: boolean}>;\nexport const provenance: Record<string, string>;\n`;
+declarations += `export { JourneyClient as JourneyPartnerClient };\nexport class JourneyMcpClient { constructor(options?: { endpoint?: string; accessToken?: string; timeoutMs?: number }); request(method: string, params?: Record<string, unknown>): Promise<unknown>; listTools(): Promise<unknown>; callTool(name: string, args?: Record<string, unknown>): Promise<unknown>; }\nexport const operations: Record<keyof Inputs, {surface: string; method: string; path: string; query: string[]; requiredQuery: string[]; scopes: string[][]; summary: string; hasBody: boolean; bodyRequired: boolean}>;\nexport const provenance: Record<string, unknown>;\n`;
 writeFileSync(resolve(root,'src/index.d.ts'),declarations);
 console.log(`Generated ${Object.keys(operations).length} operations (${Object.keys(members).length} member reads), ${Object.keys(schemas).length} upstream schemas.`);

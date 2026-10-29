@@ -16,6 +16,11 @@
     {
       "change": "Express the Unicode Cc control-character exclusion as equivalent U+0000-U+001F and U+007F-U+009F ranges for JSON Schema validator portability.",
       "source": "AddPoolCodesRequest codes pattern; no validation policy change."
+    },
+    {
+      "change": "Document three multipart bodies omitted by the export and mark these operations outside the JSON-only SDK.",
+      "source": "Core main a424e368: PagesPartnerController.uploadFeaturedImage, ThemeKitsPartnerController.uploadFont/uploadImage and their multipart utilities. Current replay digest consumes request.body before streamed file parsing."
     }
-  ]
+  ],
+  "sdkCoverage": "106 authenticated JSON/no-body partner operations and five member reads. Three multipart upload routes remain documented but excluded from SDK v2."
 }

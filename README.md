@@ -28,7 +28,7 @@ For an unpublished checkout, use `npm pack` and install the resulting tarball, o
 
 ## Hospitality partner APIs
 
-Keep partner credentials on your server. The package supports 109 authenticated operations from the documented `/v1/partner/` surface: loyalty programs and benefits, members, properties, reservations, integrations, and other scoped partner resources. Use the operation inventory for exact coverage.
+Keep partner credentials on your server. The package supports 106 authenticated operations from the documented `/v1/partner/` surface: loyalty programs and benefits, members, properties, reservations, integrations, and other scoped partner resources. Use the operation inventory for exact coverage. The featured-image, theme-font, and theme-image multipart uploads are excluded from v2; their streamed file bytes are not covered by the current Core idempotency digest. Use the upload API documentation separately and reconcile uncertain uploads before retrying.
 
 ```ts
 import { JourneyClient, JourneyError } from '@journeyrewards/sdk';

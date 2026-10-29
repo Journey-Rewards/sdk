@@ -135,9 +135,18 @@ test('Python transport runs the same authentication, replay, error and MCP fixtu
 });
 
 test('all exported operations stay within the reviewed surfaces', () => {
-  assert.equal(Object.keys(operations).length,114);
+  assert.equal(Object.keys(operations).length,111);
   for(const op of Object.values(operations)) {
     assert.ok(op.path.startsWith(op.surface==='partner'?'/v1/partner/':'/v1/members/me/'));
     if(op.surface==='member') assert.equal(op.method,'GET');
+  }
+});
+
+
+test('unsupported streamed uploads never make a misleading JSON request', async () => {
+  const client = new JourneyClient({apiKey:'jny_test',baseUrl});
+  for (const id of ['pagesPartner_uploadFeaturedImage','themeKitsPartner_uploadFont','themeKitsPartner_uploadImage']) {
+    assert.equal(operations[id], undefined);
+    await assert.rejects(client.request(id,{idempotencyKey:'upload'}), /Unknown partner operation/);
   }
 });

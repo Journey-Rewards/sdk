@@ -9825,7 +9825,28 @@
           [
             "partner:pages:manage"
           ]
-        ]
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-journey-sdk-supported": false,
+        "x-journey-sdk-limitation": "SDK v2 supports JSON requests; multipart uploads are excluded. Current Core replay digest does not fingerprint streamed file bytes; do not infer changed-file conflict detection or automatically retry an uncertain upload."
       }
     },
     "/v1/partner/pages/{pageGroupId}/member-gate-programs": {
@@ -11644,7 +11665,65 @@
           [
             "partner:theme-kits:manage"
           ]
-        ]
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file",
+                  "family"
+                ],
+                "anyOf": [
+                  {
+                    "required": [
+                      "label"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "fontId"
+                    ]
+                  }
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "family": {
+                    "type": "string"
+                  },
+                  "label": {
+                    "type": "string"
+                  },
+                  "fontId": {
+                    "type": "string"
+                  },
+                  "fallback": {
+                    "type": "string"
+                  },
+                  "weight": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 999
+                  },
+                  "style": {
+                    "type": "string",
+                    "enum": [
+                      "normal",
+                      "italic"
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-journey-sdk-supported": false,
+        "x-journey-sdk-limitation": "SDK v2 supports JSON requests; multipart uploads are excluded. Current Core replay digest does not fingerprint streamed file bytes; do not infer changed-file conflict detection or automatically retry an uncertain upload."
       }
     },
     "/v1/partner/theme-kits/{entityType}/{entityExternalId}/fonts/{fontId}": {
@@ -11879,7 +11958,40 @@
           [
             "partner:theme-kits:manage"
           ]
-        ]
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "file",
+                  "kind"
+                ],
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  },
+                  "kind": {
+                    "type": "string",
+                    "enum": [
+                      "logo",
+                      "favicon"
+                    ]
+                  },
+                  "label": {
+                    "type": "string",
+                    "maxLength": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        "x-journey-sdk-supported": false,
+        "x-journey-sdk-limitation": "SDK v2 supports JSON requests; multipart uploads are excluded. Current Core replay digest does not fingerprint streamed file bytes; do not infer changed-file conflict detection or automatically retry an uncertain upload."
       }
     },
     "/v1/partner/users/{workosUserId}/scope": {
