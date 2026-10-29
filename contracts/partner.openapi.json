@@ -7,7 +7,7 @@
             "items": {
               "maxLength": 255,
               "minLength": 1,
-              "pattern": "^[^\\s/\\p{Cc}]+$",
+              "pattern": "^[^\\s/\\u0000-\\u001F\\u007F-\\u009F]+$",
               "type": "string"
             },
             "maxItems": 10000,
@@ -151,7 +151,7 @@
             "type": "string"
           },
           "fulfillmentStrategy": {
-            "description": "How the property fulfils this definition. Partner-only, hence it lives\nhere and not on `CreateBenefitBaseRequest` — the Journey-admin twin\nderives the strategy the same way it always has, and `forbidNonWhitelisted`\nturns an admin sending this into a 400 rather than a silent drop.\n\nOmitted keeps the historical by-kind default (`benefit` →\n`propertyInternal`, `award` → `requireApproval`), so existing HXP callers\nare unchanged. Supplied, it must be in the two-slug partner allowlist;\n`external` gets its own message because it is display-only and excluded\nfrom the entitlement read view.\n\nThe type includes `null` because that is what actually arrives: `@IsOptional()`\nshort-circuits validation for null as well as undefined, and `whitelist`\nkeeps a decorated property, so a client serialising an unset optional as\n`\"fulfillmentStrategy\": null` reaches the service with null intact. Null is\ntreated as \"no choice made\" — identical to omitting the field.",
+            "description": "How the property fulfils this definition. Partner-only, hence it lives\nhere and not on `CreateBenefitBaseRequest` \u2014 the Journey-admin twin\nderives the strategy the same way it always has, and `forbidNonWhitelisted`\nturns an admin sending this into a 400 rather than a silent drop.\n\nOmitted keeps the historical by-kind default (`benefit` \u2192\n`propertyInternal`, `award` \u2192 `requireApproval`), so existing HXP callers\nare unchanged. Supplied, it must be in the two-slug partner allowlist;\n`external` gets its own message because it is display-only and excluded\nfrom the entitlement read view.\n\nThe type includes `null` because that is what actually arrives: `@IsOptional()`\nshort-circuits validation for null as well as undefined, and `whitelist`\nkeeps a decorated property, so a client serialising an unset optional as\n`\"fulfillmentStrategy\": null` reaches the service with null intact. Null is\ntreated as \"no choice made\" \u2014 identical to omitting the field.",
             "enum": [
               "requireApproval",
               "propertyInternal"
@@ -167,13 +167,13 @@
             "type": "string"
           },
           "memberTitle": {
-            "description": "What the GUEST sees. Distinct from `name`, which is the operator's own\nlabel and from now on writes `internal_name` only.\n\nPartner-only, like `fulfillmentStrategy`: the Journey-admin twin derives\n`member_title` from `name` exactly as it always has, and\n`forbidNonWhitelisted` turns an admin sending this into a 400 rather than\na silent drop.\n\nOptional so existing HXP callers keep working, but REQUIRED the moment\n`memberVisible` is true — enforced in `BenefitDefinitionService`, not here,\nbecause an update can flip visibility without resending the title.",
+            "description": "What the GUEST sees. Distinct from `name`, which is the operator's own\nlabel and from now on writes `internal_name` only.\n\nPartner-only, like `fulfillmentStrategy`: the Journey-admin twin derives\n`member_title` from `name` exactly as it always has, and\n`forbidNonWhitelisted` turns an admin sending this into a 400 rather than\na silent drop.\n\nOptional so existing HXP callers keep working, but REQUIRED the moment\n`memberVisible` is true \u2014 enforced in `BenefitDefinitionService`, not here,\nbecause an update can flip visibility without resending the title.",
             "maxLength": 200,
             "minLength": 1,
             "type": "string"
           },
           "memberVisible": {
-            "description": "Whether the benefit is published to guests. Partner-only, and **defaults\nto `false`** (decision L7) — unlike the column, which defaults to `true`\nso Journey-admin and house authoring are untouched.\n\nFalse is a gate against publishing by accident, NOT a claim that partner\nbenefits should be private: most should be shown. What the default buys is\nthat forgetting to write guest copy yields an unpublished benefit rather\nthan a published internal note.",
+            "description": "Whether the benefit is published to guests. Partner-only, and **defaults\nto `false`** (decision L7) \u2014 unlike the column, which defaults to `true`\nso Journey-admin and house authoring are untouched.\n\nFalse is a gate against publishing by accident, NOT a claim that partner\nbenefits should be private: most should be shown. What the default buys is\nthat forgetting to write guest copy yields an unpublished benefit rather\nthan a published internal note.",
             "type": "boolean"
           },
           "name": {
@@ -182,23 +182,23 @@
             "type": "string"
           },
           "organizationId": {
-            "description": "External org id — global/superadmin callers only.",
+            "description": "External org id \u2014 global/superadmin callers only.",
             "type": "string"
           },
           "rateCode": {
-            "description": "Negotiated booking rate code — the PMS/CRS rate PLAN this tier's members\nare quoted. It selects a rate; it does not discount one, so it is not a\npromo code.\n\nDefinition-level default. Bind the benefit to a tier with\n`rateCodeOverride` to vary it per tier, which is the normal case: one\n\"Member rate\" benefit whose code differs at each rung of the ladder.",
+            "description": "Negotiated booking rate code \u2014 the PMS/CRS rate PLAN this tier's members\nare quoted. It selects a rate; it does not discount one, so it is not a\npromo code.\n\nDefinition-level default. Bind the benefit to a tier with\n`rateCodeOverride` to vary it per tier, which is the normal case: one\n\"Member rate\" benefit whose code differs at each rung of the ladder.",
             "maxLength": 64,
             "minLength": 1,
             "type": "string"
           },
           "rateCodeParam": {
-            "description": "The query parameter the brand's booking engine expects the rate code in —\nThinkReservations uses `couponCode`.\n\nRequired to BUILD a booking link; omit it and the member is shown the code\nto enter themselves. Never guessed: `hms_properties_view.booking_url` is\nnot templated (0 of 2,622 populated URLs carry a placeholder), and a wrong\nparam silently books the public rate.",
+            "description": "The query parameter the brand's booking engine expects the rate code in \u2014\nThinkReservations uses `couponCode`.\n\nRequired to BUILD a booking link; omit it and the member is shown the code\nto enter themselves. Never guessed: `hms_properties_view.booking_url` is\nnot templated (0 of 2,622 populated URLs carry a placeholder), and a wrong\nparam silently books the public rate.",
             "maxLength": 64,
             "minLength": 1,
             "type": "string"
           },
           "systemType": {
-            "description": "Which of the program's two SINGLETON CONFIGS this benefit is, if either.\n\nThese are not ordinary benefits: Core's resolvers look them up directly by\n`system_key`, never by scanning a partner's benefits or matching a name.\n\n  `earnMultiplier` — THE tier-level points rate. The TOTAL MEMBER_DIRECT\n    earn rate for a member holding a tier it is bound to; \"6\" means 6x, not\n    6x on top of something. Requires `kind: 'benefit'` and\n    `valueUnit: 'multiplier'` (defaulted when omitted).\n  `memberRate` — THE benefit carrying the negotiated booking rate. Pair it\n    with `rateCode` / `rateCodeParam`, and vary the code per tier with the\n    binding's `rateCodeOverride`.\n\nAt most ONE of each per program — a second is a 409. CREATE-TIME ONLY:\nmoving the marker after members have been promised a rate changes what\nthey were promised. Re-author the definition instead.\n\nOne field rather than two booleans so \"both at once\" is unrepresentable\nrather than a validation error, and so an authoring UI is one control.",
+            "description": "Which of the program's two SINGLETON CONFIGS this benefit is, if either.\n\nThese are not ordinary benefits: Core's resolvers look them up directly by\n`system_key`, never by scanning a partner's benefits or matching a name.\n\n  `earnMultiplier` \u2014 THE tier-level points rate. The TOTAL MEMBER_DIRECT\n    earn rate for a member holding a tier it is bound to; \"6\" means 6x, not\n    6x on top of something. Requires `kind: 'benefit'` and\n    `valueUnit: 'multiplier'` (defaulted when omitted).\n  `memberRate` \u2014 THE benefit carrying the negotiated booking rate. Pair it\n    with `rateCode` / `rateCodeParam`, and vary the code per tier with the\n    binding's `rateCodeOverride`.\n\nAt most ONE of each per program \u2014 a second is a 409. CREATE-TIME ONLY:\nmoving the marker after members have been promised a rate changes what\nthey were promised. Re-author the definition instead.\n\nOne field rather than two booleans so \"both at once\" is unrepresentable\nrather than a validation error, and so an authoring UI is one control.",
             "enum": [
               "earnMultiplier",
               "memberRate"
@@ -234,16 +234,16 @@
             "type": "string"
           },
           "organizationId": {
-            "description": "External org ID for global-scope (superadmin) callers creating within a\nspecific org. Partner tokens ignore this — they are scoped to their own org.",
+            "description": "External org ID for global-scope (superadmin) callers creating within a\nspecific org. Partner tokens ignore this \u2014 they are scoped to their own org.",
             "type": "string"
           },
           "ownerExternalId": {
-            "description": "EXTERNAL identifier of the owning brand (document/external id) or venue\n(property external id). REQUIRED when `ownerType` is `brand` or `venue`;\nrejected for `org`, which is always owned by the calling organization.\n\nNever an internal id — the server resolves it and refuses anything the\ncaller's org does not own (non-disclosing 404).",
+            "description": "EXTERNAL identifier of the owning brand (document/external id) or venue\n(property external id). REQUIRED when `ownerType` is `brand` or `venue`;\nrejected for `org`, which is always owned by the calling organization.\n\nNever an internal id \u2014 the server resolves it and refuses anything the\ncaller's org does not own (non-disclosing 404).",
             "maxLength": 255,
             "type": "string"
           },
           "ownerType": {
-            "description": "Program SCOPE (OpenSpec `add-partner-loyalty-tiers`, B1.1). Defaults to\n`org` — which is what every pre-tiers program is — so omitting both fields\nkeeps the original create contract byte-for-byte.\n\nStay-credit attribution is highest-specificity-wins: a stay credits the most\nspecific active program covering the property (venue > brand > org) and no\nless-specific one, so this is the field that decides which program a stay\nqualifies toward.",
+            "description": "Program SCOPE (OpenSpec `add-partner-loyalty-tiers`, B1.1). Defaults to\n`org` \u2014 which is what every pre-tiers program is \u2014 so omitting both fields\nkeeps the original create contract byte-for-byte.\n\nStay-credit attribution is highest-specificity-wins: a stay credits the most\nspecific active program covering the property (venue > brand > org) and no\nless-specific one, so this is the field that decides which program a stay\nqualifies toward.",
             "enum": [
               "brand",
               "org",
@@ -289,7 +289,7 @@
             "type": "string"
           },
           "organizationId": {
-            "description": "External org id — global/superadmin callers only.",
+            "description": "External org id \u2014 global/superadmin callers only.",
             "type": "string"
           },
           "qualifier": {
@@ -610,7 +610,7 @@
       "GrantProgramTierRequest": {
         "properties": {
           "memberExternalId": {
-            "description": "The member's opaque external id — never an internal integer id.",
+            "description": "The member's opaque external id \u2014 never an internal integer id.",
             "minLength": 1,
             "type": "string"
           },
@@ -620,7 +620,7 @@
             "type": "string"
           },
           "organizationId": {
-            "description": "External org id — global/superadmin callers only.",
+            "description": "External org id \u2014 global/superadmin callers only.",
             "type": "string"
           },
           "validThrough": {
@@ -1139,7 +1139,7 @@
             "type": "number"
           },
           "declaredByProgram": {
-            "description": "TRUE when a loyalty program declared this row, FALSE when Journey admin\ndid. Additive since 2026-09-25 (W10) — an org can hold an admin row and a\nprogram row at the same scope, and they are otherwise indistinguishable\nhere. The program's internal id is deliberately NOT exposed.",
+            "description": "TRUE when a loyalty program declared this row, FALSE when Journey admin\ndid. Additive since 2026-09-25 (W10) \u2014 an org can hold an admin row and a\nprogram row at the same scope, and they are otherwise indistinguishable\nhere. The program's internal id is deliberately NOT exposed.",
             "type": "boolean"
           },
           "multiplier": {
@@ -1865,7 +1865,7 @@
       "SetVenueBookingRateCodeRequest": {
         "properties": {
           "organizationId": {
-            "description": "External org id — global/superadmin callers only.",
+            "description": "External org id \u2014 global/superadmin callers only.",
             "type": "string"
           },
           "rateCode": {
@@ -1874,7 +1874,7 @@
             "type": "string"
           },
           "rateCodeParam": {
-            "description": "The query parameter the venue's booking engine expects the code in —\nThinkReservations uses `couponCode`. Omit it and the code is shown on the\ninterstitial instead of applied. A member's tier code with no param of\nits own is applied with this one.",
+            "description": "The query parameter the venue's booking engine expects the code in \u2014\nThinkReservations uses `couponCode`. Omit it and the code is shown on the\ninterstitial instead of applied. A member's tier code with no param of\nits own is applied with this one.",
             "maxLength": 64,
             "minLength": 1,
             "type": "string"
@@ -1912,7 +1912,7 @@
             "type": "array"
           },
           "description": {
-            "description": "The custom free-text qualifier. Documentation only — never parsed.",
+            "description": "The custom free-text qualifier. Documentation only \u2014 never parsed.",
             "maxLength": 2000,
             "minLength": 1,
             "type": "string"
@@ -1953,7 +1953,7 @@
             "type": "string"
           },
           "cadenceN": {
-            "description": "Required when `cadence` becomes `every_n_stays` and the stored row does not\nalready carry an N. Switching AWAY from `every_n_stays` clears it\nautomatically — an explicit `null` is accepted but never necessary.",
+            "description": "Required when `cadence` becomes `every_n_stays` and the stored row does not\nalready carry an N. Switching AWAY from `every_n_stays` clears it\nautomatically \u2014 an explicit `null` is accepted but never necessary.",
             "nullable": true,
             "type": "number"
           },
@@ -1968,7 +1968,7 @@
             "type": "string"
           },
           "memberVisible": {
-            "description": "Publish or unpublish. Turning this ON requires a guest title — either sent\nin the same patch or already stored — or the write is a 400.",
+            "description": "Publish or unpublish. Turning this ON requires a guest title \u2014 either sent\nin the same patch or already stored \u2014 or the write is a 400.",
             "type": "boolean"
           },
           "name": {
@@ -1977,7 +1977,7 @@
             "type": "string"
           },
           "rateCode": {
-            "description": "Rate code. Send `null` to CLEAR it — not `''`, which is a 400. An empty\nstring would otherwise store as an empty code that reads back as one, and\nthe \"belongs to the member-rate benefit\" guard tests for presence.",
+            "description": "Rate code. Send `null` to CLEAR it \u2014 not `''`, which is a 400. An empty\nstring would otherwise store as an empty code that reads back as one, and\nthe \"belongs to the member-rate benefit\" guard tests for presence.",
             "maxLength": 64,
             "minLength": 1,
             "nullable": true,
@@ -2009,7 +2009,7 @@
       "UpdateLoyaltyProgramRequest": {
         "properties": {
           "aboutUrl": {
-            "description": "\"ABOUT PROGRAM\" link surfaced on member reads. `null` clears it.\nAdditive (B2.2) — omitting it leaves the stored value untouched.",
+            "description": "\"ABOUT PROGRAM\" link surfaced on member reads. `null` clears it.\nAdditive (B2.2) \u2014 omitting it leaves the stored value untouched.",
             "format": "uri",
             "maxLength": 2000,
             "nullable": true,
@@ -2054,7 +2054,7 @@
             "type": "string"
           },
           "ownerType": {
-            "description": "Re-scope the program (B1.1). Omitting `ownerType` leaves the stored scope\nuntouched — there is no way to clear a scope, because every program has\nexactly one.\n\nRe-scoping an ACTIVE program changes which stays credit it, so the Studio\nshould treat it as a configuration change, not a cosmetic edit.",
+            "description": "Re-scope the program (B1.1). Omitting `ownerType` leaves the stored scope\nuntouched \u2014 there is no way to clear a scope, because every program has\nexactly one.\n\nRe-scoping an ACTIVE program changes which stays credit it, so the Studio\nshould treat it as a configuration change, not a cosmetic edit.",
             "enum": [
               "brand",
               "org",
@@ -2218,7 +2218,7 @@
   "paths": {
     "/v1/partner/arrivals": {
       "get": {
-        "description": "Benefit-fulfillment tasks for upcoming arrivals at the venues the credential can reach — what front-desk staff owe each arriving member. Only members with something outstanding appear; for the full arrivals roster use `GET /v1/partner/reservations`.",
+        "description": "Benefit-fulfillment tasks for upcoming arrivals at the venues the credential can reach \u2014 what front-desk staff owe each arriving member. Only members with something outstanding appear; for the full arrivals roster use `GET /v1/partner/reservations`.",
         "operationId": "loyaltyArrivalsPartner_list",
         "parameters": [
           {
@@ -2231,7 +2231,7 @@
             }
           },
           {
-            "description": "Narrow to one venue (external id). Outside the caller's scope → 403.",
+            "description": "Narrow to one venue (external id). Outside the caller's scope \u2192 403.",
             "in": "query",
             "name": "propertyId",
             "required": false,
@@ -2378,7 +2378,7 @@
     },
     "/v1/partner/code-pools": {
       "get": {
-        "description": "Code pools owned by your organization. A pool is an offer that redeems through single-use codes, so a pool’s reference is its offer id.",
+        "description": "Code pools owned by your organization. A pool is an offer that redeems through single-use codes, so a pool\u2019s reference is its offer id.",
         "operationId": "codePoolsPartner_listPools",
         "parameters": [
           {
@@ -2452,7 +2452,7 @@
         "operationId": "codePoolsPartner_getPool",
         "parameters": [
           {
-            "description": "Pool reference — the offer id backing the pool. Must match `^[A-Za-z0-9_-]{1,100}$`.",
+            "description": "Pool reference \u2014 the offer id backing the pool. Must match `^[A-Za-z0-9_-]{1,100}$`.",
             "in": "path",
             "name": "poolRef",
             "required": true,
@@ -2557,7 +2557,7 @@
         "operationId": "codePoolsPartner_addCodes",
         "parameters": [
           {
-            "description": "Pool reference — the offer id backing the pool. Must match `^[A-Za-z0-9_-]{1,100}$`.",
+            "description": "Pool reference \u2014 the offer id backing the pool. Must match `^[A-Za-z0-9_-]{1,100}$`.",
             "in": "path",
             "name": "poolRef",
             "required": true,
@@ -2656,7 +2656,7 @@
             }
           },
           {
-            "description": "Pool reference — the offer id backing the pool. Must match `^[A-Za-z0-9_-]{1,100}$`.",
+            "description": "Pool reference \u2014 the offer id backing the pool. Must match `^[A-Za-z0-9_-]{1,100}$`.",
             "in": "path",
             "name": "poolRef",
             "required": true,
@@ -3463,7 +3463,7 @@
             }
           },
           {
-            "description": "Narrow to one property. This is the internal numeric property id, not an external id — the same integer HXP uses in `X-Emulate-Property-Ids`.",
+            "description": "Narrow to one property. This is the internal numeric property id, not an external id \u2014 the same integer HXP uses in `X-Emulate-Property-Ids`.",
             "in": "query",
             "name": "propertyId",
             "required": false,
@@ -3631,7 +3631,7 @@
     },
     "/v1/partner/fulfillments/{fulfillmentId}/approve": {
       "post": {
-        "description": "Approves a claim waiting on staff sign-off. Approval alone does not fulfill it — mark it fulfilled once the member actually receives the benefit.",
+        "description": "Approves a claim waiting on staff sign-off. Approval alone does not fulfill it \u2014 mark it fulfilled once the member actually receives the benefit.",
         "operationId": "fulfillmentsPartner_approveFulfillment",
         "parameters": [
           {
@@ -4061,7 +4061,7 @@
             }
           },
           {
-            "description": "Narrow to one property. This is the internal numeric property id, not an external id — the same integer HXP uses in `X-Emulate-Property-Ids`.",
+            "description": "Narrow to one property. This is the internal numeric property id, not an external id \u2014 the same integer HXP uses in `X-Emulate-Property-Ids`.",
             "in": "query",
             "name": "propertyId",
             "required": false,
@@ -4156,7 +4156,7 @@
             }
           },
           {
-            "description": "Narrow to one property. This is the internal numeric property id, not an external id — the same integer HXP uses in `X-Emulate-Property-Ids`.",
+            "description": "Narrow to one property. This is the internal numeric property id, not an external id \u2014 the same integer HXP uses in `X-Emulate-Property-Ids`.",
             "in": "query",
             "name": "propertyId",
             "required": false,
@@ -4332,7 +4332,7 @@
             }
           },
           {
-            "description": "Comma-separated redemption types to include:\ndirect,requireApproval,externalCode,static,propertyInternal,journeyInternal,user,notification,giveaway.\nWhen omitted, defaults to excluding `static` only — every other type\n(direct, requireApproval, externalCode, journeyInternal, ...) is returned,\nso the approval queue (pending_approval rows are always requireApproval)\nstays intact while static catalog offers are hidden. Pass an explicit list\nto filter to specific types instead.",
+            "description": "Comma-separated redemption types to include:\ndirect,requireApproval,externalCode,static,propertyInternal,journeyInternal,user,notification,giveaway.\nWhen omitted, defaults to excluding `static` only \u2014 every other type\n(direct, requireApproval, externalCode, journeyInternal, ...) is returned,\nso the approval queue (pending_approval rows are always requireApproval)\nstays intact while static catalog offers are hidden. Pass an explicit list\nto filter to specific types instead.",
             "in": "query",
             "name": "redemptionType",
             "required": false,
@@ -4647,7 +4647,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The organization’s programs."
+            "description": "The organization\u2019s programs."
           },
           "400": {
             "content": {
@@ -4788,7 +4788,7 @@
     },
     "/v1/partner/loyalty/programs/{externalId}": {
       "get": {
-        "description": "A program outside your organization returns 404 rather than 403, so the existence of another tenant’s program is never disclosed.",
+        "description": "A program outside your organization returns 404 rather than 403, so the existence of another tenant\u2019s program is never disclosed.",
         "operationId": "loyaltyProgramsPartner_get",
         "parameters": [
           {
@@ -5621,7 +5621,7 @@
         ]
       },
       "get": {
-        "description": "Rate codes that earn no loyalty credit on this program — typically staff, comp, and wholesale rates.",
+        "description": "Rate codes that earn no loyalty credit on this program \u2014 typically staff, comp, and wholesale rates.",
         "operationId": "loyaltyProgramsPartner_getExcludedRateCodes",
         "parameters": [
           {
@@ -5708,7 +5708,7 @@
         ]
       },
       "put": {
-        "description": "Full replacement — the supplied list becomes the complete set of exclusions.",
+        "description": "Full replacement \u2014 the supplied list becomes the complete set of exclusions.",
         "operationId": "loyaltyProgramsPartner_replaceExcludedRateCodes",
         "parameters": [
           {
@@ -5807,7 +5807,7 @@
     },
     "/v1/partner/loyalty/programs/{externalId}/join-page": {
       "get": {
-        "description": "The program’s public join page. Pass `state` to read the draft rather than the published version.",
+        "description": "The program\u2019s public join page. Pass `state` to read the draft rather than the published version.",
         "operationId": "loyaltyProgramsPartner_getJoinPage",
         "parameters": [
           {
@@ -5907,7 +5907,7 @@
         ]
       },
       "put": {
-        "description": "Full replacement of the program’s public join page content.",
+        "description": "Full replacement of the program\u2019s public join page content.",
         "operationId": "loyaltyProgramsPartner_upsertJoinPage",
         "parameters": [
           {
@@ -6021,7 +6021,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The program’s benefits."
+            "description": "The program\u2019s benefits."
           },
           "400": {
             "content": {
@@ -6484,7 +6484,7 @@
     },
     "/v1/partner/loyalty/programs/{programExternalId}/benefits/{externalId}/audience": {
       "get": {
-        "description": "The members the eligibility rule currently resolves to, with a count — use it to sanity-check a rule before publishing.",
+        "description": "The members the eligibility rule currently resolves to, with a count \u2014 use it to sanity-check a rule before publishing.",
         "operationId": "loyaltyBenefitsPartner_getAudience",
         "parameters": [
           {
@@ -6642,7 +6642,7 @@
                 }
               }
             },
-            "description": "The audience, as a CSV file attachment or — with `format=json` — a JSON body."
+            "description": "The audience, as a CSV file attachment or \u2014 with `format=json` \u2014 a JSON body."
           },
           "400": {
             "content": {
@@ -7018,7 +7018,7 @@
     },
     "/v1/partner/loyalty/programs/{programExternalId}/tiers": {
       "get": {
-        "description": "The program’s tiers in ladder order.",
+        "description": "The program\u2019s tiers in ladder order.",
         "operationId": "loyaltyTiersPartner_list",
         "parameters": [
           {
@@ -7043,7 +7043,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The program’s tiers."
+            "description": "The program\u2019s tiers."
           },
           "400": {
             "content": {
@@ -7742,7 +7742,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The tier’s entitlements."
+            "description": "The tier\u2019s entitlements."
           },
           "400": {
             "content": {
@@ -8132,7 +8132,7 @@
         ]
       },
       "post": {
-        "description": "Manually places a member in this tier, bypassing the qualifier — for example for a comped VIP.",
+        "description": "Manually places a member in this tier, bypassing the qualifier \u2014 for example for a comped VIP.",
         "operationId": "loyaltyTiersPartner_grantTier",
         "parameters": [
           {
@@ -8443,7 +8443,7 @@
         ]
       },
       "put": {
-        "description": "Full replacement. The rate code members of this tier book at, superseding a venue’s default booking rate code.",
+        "description": "Full replacement. The rate code members of this tier book at, superseding a venue\u2019s default booking rate code.",
         "operationId": "loyaltyTiersPartner_setMemberRate",
         "parameters": [
           {
@@ -8650,7 +8650,7 @@
     },
     "/v1/partner/loyalty/rule-attributes": {
       "get": {
-        "description": "The attribute vocabulary a benefit eligibility rule may be built from: each entry gives the attribute key, its value type, the operators it accepts, and whether it supports a time window. Static configuration — a rule referencing an attribute absent from this list cannot be evaluated.",
+        "description": "The attribute vocabulary a benefit eligibility rule may be built from: each entry gives the attribute key, its value type, the operators it accepts, and whether it supports a time window. Static configuration \u2014 a rule referencing an attribute absent from this list cannot be evaluated.",
         "operationId": "loyaltyRuleAttributesPartner_list",
         "parameters": [],
         "responses": {
@@ -8917,14 +8917,10 @@
             "name": "limit",
             "required": true,
             "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ],
               "default": 50,
               "maximum": 100,
-              "minimum": 1
+              "minimum": 1,
+              "type": "integer"
             }
           },
           {
@@ -8932,13 +8928,9 @@
             "name": "offset",
             "required": true,
             "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ],
               "default": 0,
-              "minimum": 0
+              "minimum": 0,
+              "type": "integer"
             }
           },
           {
@@ -9154,7 +9146,7 @@
         ]
       },
       "patch": {
-        "description": "Partial update of name, path, and member gate. Path changes are live immediately — they are the route the page is served on, not draft content.",
+        "description": "Partial update of name, path, and member gate. Path changes are live immediately \u2014 they are the route the page is served on, not draft content.",
         "operationId": "pagesPartner_update",
         "parameters": [
           {
@@ -9326,7 +9318,7 @@
         },
         "responses": {
           "200": {
-            "description": "The page’s domain assignment."
+            "description": "The page\u2019s domain assignment."
           },
           "400": {
             "content": {
@@ -9387,7 +9379,7 @@
             "partnerApiKey": []
           }
         ],
-        "summary": "Assign or clear the page’s custom domain",
+        "summary": "Assign or clear the page\u2019s custom domain",
         "tags": [
           "partner/pages"
         ],
@@ -9715,7 +9707,7 @@
     },
     "/v1/partner/pages/{pageGroupId}/featured-image": {
       "post": {
-        "description": "Multipart upload of a single image (10MB limit) into the owner’s media library, set as the page’s featured image.",
+        "description": "Multipart upload of a single image (10MB limit) into the owner\u2019s media library, set as the page\u2019s featured image.",
         "operationId": "pagesPartner_uploadFeaturedImage",
         "parameters": [
           {
@@ -10196,7 +10188,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The page’s SEO metadata."
+            "description": "The page\u2019s SEO metadata."
           },
           "400": {
             "content": {
@@ -10381,7 +10373,7 @@
     },
     "/v1/partner/pages/{pageGroupId}/theme": {
       "get": {
-        "description": "Theme overrides applied on top of the owning entity’s theme kit.",
+        "description": "Theme overrides applied on top of the owning entity\u2019s theme kit.",
         "operationId": "pagesPartner_getTheme",
         "parameters": [
           {
@@ -10722,7 +10714,7 @@
         "operationId": "pointMultipliersPartner_getConfig",
         "parameters": [
           {
-            "description": "External org ID (HXP UUID or WorkOS org ID) — only honored for\nglobal-scope (Journey admin) callers querying a specific org.\nPartner callers are always scoped to their own org from the token.",
+            "description": "External org ID (HXP UUID or WorkOS org ID) \u2014 only honored for\nglobal-scope (Journey admin) callers querying a specific org.\nPartner callers are always scoped to their own org from the token.",
             "in": "query",
             "name": "organizationId",
             "required": false,
@@ -10830,7 +10822,7 @@
             }
           },
           {
-            "description": "Opaque keyset cursor from the previous page's `nextCursor`.\n\nPreferred over `offset` for walking a multi-property roster: it cannot skip\nor duplicate a row when the PMS sync writes underneath the caller, and it\ndoes not make the database walk and discard the skipped rows the way a\ndeep OFFSET does. Ignored (and `offset` honored instead) when the caller\nsupplies a sort this cursor does not describe.\n\nThe token carries only the page's last `(check_in_date,\nexternal_reservation_id)` — the PUBLIC reservation uuid, never an internal\nPK — and no authorization: scope is re-resolved from the token on every\nrequest.\n\nA stale, hand-edited or otherwise malformed cursor is IGNORED (you get page\none), never a 400 and never a 500: both fields are shape-checked before\nthey can reach SQL.\n\n`offset` is unchanged and still works; supplying both means the cursor\nwins, and the response then echoes `offset: 0` because that is the offset\nactually applied.",
+            "description": "Opaque keyset cursor from the previous page's `nextCursor`.\n\nPreferred over `offset` for walking a multi-property roster: it cannot skip\nor duplicate a row when the PMS sync writes underneath the caller, and it\ndoes not make the database walk and discard the skipped rows the way a\ndeep OFFSET does. Ignored (and `offset` honored instead) when the caller\nsupplies a sort this cursor does not describe.\n\nThe token carries only the page's last `(check_in_date,\nexternal_reservation_id)` \u2014 the PUBLIC reservation uuid, never an internal\nPK \u2014 and no authorization: scope is re-resolved from the token on every\nrequest.\n\nA stale, hand-edited or otherwise malformed cursor is IGNORED (you get page\none), never a 400 and never a 500: both fields are shape-checked before\nthey can reach SQL.\n\n`offset` is unchanged and still works; supplying both means the cursor\nwins, and the response then echoes `offset: 0` because that is the offset\nactually applied.",
             "in": "query",
             "name": "cursor",
             "required": false,
@@ -10885,7 +10877,7 @@
             }
           },
           {
-            "description": "Narrow to SEVERAL venues in one request — property EXTERNAL ids.\n\nAdditive alternative to `propertyId`, which keeps working unchanged. When\nboth are supplied the result is their union. Omitting both still means\n\"everything in my scope\".\n\nEVERY id is checked against the caller's resolved scope; a single\nout-of-scope id 403s the whole request rather than being dropped, so a\ncaller can never mistake a silently-narrowed page for a complete one.",
+            "description": "Narrow to SEVERAL venues in one request \u2014 property EXTERNAL ids.\n\nAdditive alternative to `propertyId`, which keeps working unchanged. When\nboth are supplied the result is their union. Omitting both still means\n\"everything in my scope\".\n\nEVERY id is checked against the caller's resolved scope; a single\nout-of-scope id 403s the whole request rather than being dropped, so a\ncaller can never mistake a silently-narrowed page for a complete one.",
             "in": "query",
             "name": "propertyIds",
             "required": false,
@@ -11032,7 +11024,7 @@
     },
     "/v1/partner/scope": {
       "get": {
-        "description": "Returns the organization, venues, brands, and permissions the calling credential resolves to. This is the only partner endpoint that requires no scope: it reports the caller’s own boundary, which authentication has already established.",
+        "description": "Returns the organization, venues, brands, and permissions the calling credential resolves to. This is the only partner endpoint that requires no scope: it reports the caller\u2019s own boundary, which authentication has already established.",
         "operationId": "scopePartner_getScope",
         "parameters": [
           {
@@ -11088,7 +11080,7 @@
     },
     "/v1/partner/theme-kits": {
       "get": {
-        "description": "Every theme kit in reach of the credential. Kits are addressed by the entity they style — an organization, a brand, or a property — because a kit’s presence on an entity is what overrides the styling it would otherwise inherit.",
+        "description": "Every theme kit in reach of the credential. Kits are addressed by the entity they style \u2014 an organization, a brand, or a property \u2014 because a kit\u2019s presence on an entity is what overrides the styling it would otherwise inherit.",
         "operationId": "themeKitsPartner_list",
         "parameters": [
           {
@@ -11096,14 +11088,10 @@
             "name": "limit",
             "required": true,
             "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ],
               "default": 100,
               "maximum": 100,
-              "minimum": 1
+              "minimum": 1,
+              "type": "integer"
             }
           },
           {
@@ -11111,13 +11099,9 @@
             "name": "offset",
             "required": true,
             "schema": {
-              "allOf": [
-                {
-                  "$ref": "#/components/schemas/Object"
-                }
-              ],
               "default": 0,
-              "minimum": 0
+              "minimum": 0,
+              "type": "integer"
             }
           },
           {
@@ -11307,7 +11291,7 @@
             "partnerApiKey": []
           }
         ],
-        "summary": "Delete an entity’s theme kit",
+        "summary": "Delete an entity\u2019s theme kit",
         "tags": [
           "partner/theme-kits"
         ],
@@ -11357,7 +11341,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The entity’s own and effective theme kit."
+            "description": "The entity\u2019s own and effective theme kit."
           },
           "400": {
             "content": {
@@ -11408,7 +11392,7 @@
             "partnerApiKey": []
           }
         ],
-        "summary": "Get an entity’s theme kit",
+        "summary": "Get an entity\u2019s theme kit",
         "tags": [
           "partner/theme-kits"
         ],
@@ -11529,7 +11513,7 @@
             "partnerApiKey": []
           }
         ],
-        "summary": "Create or replace an entity’s theme kit",
+        "summary": "Create or replace an entity\u2019s theme kit",
         "tags": [
           "partner/theme-kits"
         ],
@@ -11542,7 +11526,7 @@
     },
     "/v1/partner/theme-kits/{entityType}/{entityExternalId}/fonts": {
       "post": {
-        "description": "Multipart upload of a single font file (10MB limit). The stored font becomes referenceable by the kit’s typography settings.",
+        "description": "Multipart upload of a single font file (10MB limit). The stored font becomes referenceable by the kit\u2019s typography settings.",
         "operationId": "themeKitsPartner_uploadFont",
         "parameters": [
           {
@@ -11923,7 +11907,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The user’s current reach."
+            "description": "The user\u2019s current reach."
           },
           "401": {
             "content": {
@@ -11964,7 +11948,7 @@
             "partnerApiKey": []
           }
         ],
-        "summary": "Get a user’s reach",
+        "summary": "Get a user\u2019s reach",
         "tags": [
           "partner/access"
         ],
@@ -12008,7 +11992,7 @@
         },
         "responses": {
           "200": {
-            "description": "The user’s reach after the change."
+            "description": "The user\u2019s reach after the change."
           },
           "400": {
             "content": {
@@ -12059,7 +12043,7 @@
             "partnerApiKey": []
           }
         ],
-        "summary": "Set a user’s reach",
+        "summary": "Set a user\u2019s reach",
         "tags": [
           "partner/access"
         ],
@@ -12072,7 +12056,7 @@
     },
     "/v1/partner/venues/{venueExternalId}/booking-rate-code": {
       "delete": {
-        "description": "Removes the default so bookings fall back to the venue’s own rates. Idempotent: clearing an already-cleared venue succeeds.",
+        "description": "Removes the default so bookings fall back to the venue\u2019s own rates. Idempotent: clearing an already-cleared venue succeeds.",
         "operationId": "venuesPartner_clear",
         "parameters": [
           {
@@ -12138,7 +12122,7 @@
             "partnerApiKey": []
           }
         ],
-        "summary": "Clear a venue’s default booking rate code",
+        "summary": "Clear a venue\u2019s default booking rate code",
         "tags": [
           "partner/venues"
         ],
@@ -12149,7 +12133,7 @@
         ]
       },
       "get": {
-        "description": "The rate code applied to every booking linkout for this venue, unless a member’s loyalty tier supplies one that supersedes it.",
+        "description": "The rate code applied to every booking linkout for this venue, unless a member\u2019s loyalty tier supplies one that supersedes it.",
         "operationId": "venuesPartner_get",
         "parameters": [
           {
@@ -12174,7 +12158,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The venue’s default booking rate code."
+            "description": "The venue\u2019s default booking rate code."
           },
           "401": {
             "content": {
@@ -12215,7 +12199,7 @@
             "partnerApiKey": []
           }
         ],
-        "summary": "Get a venue’s default booking rate code",
+        "summary": "Get a venue\u2019s default booking rate code",
         "tags": [
           "partner/venues"
         ],
@@ -12226,7 +12210,7 @@
         ]
       },
       "put": {
-        "description": "Full replacement — the supplied body becomes the whole configuration.",
+        "description": "Full replacement \u2014 the supplied body becomes the whole configuration.",
         "operationId": "venuesPartner_set",
         "parameters": [
           {
@@ -12302,7 +12286,7 @@
             "partnerApiKey": []
           }
         ],
-        "summary": "Set a venue’s default booking rate code",
+        "summary": "Set a venue\u2019s default booking rate code",
         "tags": [
           "partner/venues"
         ],
@@ -12315,11 +12299,11 @@
     },
     "/v1/partner/vguests/guest-invites": {
       "get": {
-        "description": "Every invitation sent for one verified-guest profile. Requires both `partner:guests:read` (declared on the controller) and `partner:guests:pii:read` (on the handler) — the guard ANDs them.",
+        "description": "Every invitation sent for one verified-guest profile. Requires both `partner:guests:read` (declared on the controller) and `partner:guests:pii:read` (on the handler) \u2014 the guard ANDs them.",
         "operationId": "guestInvitesPartner_listByVguestProfile",
         "parameters": [
           {
-            "description": "Internal numeric verified-guest profile id — not an external id. A non-integer value is rejected with 400 before the handler runs.",
+            "description": "Internal numeric verified-guest profile id \u2014 not an external id. A non-integer value is rejected with 400 before the handler runs.",
             "in": "query",
             "name": "vguestProfileId",
             "required": true,
@@ -12405,7 +12389,7 @@
         ]
       },
       "post": {
-        "description": "Emails a verified-guest invitation. Requires both `partner:guests:read` (declared on the controller) and `partner:guests:pii:read` (on the handler) — the guard ANDs them.",
+        "description": "Emails a verified-guest invitation. Requires both `partner:guests:read` (declared on the controller) and `partner:guests:pii:read` (on the handler) \u2014 the guard ANDs them.",
         "operationId": "guestInvitesPartner_sendInvite",
         "parameters": [],
         "requestBody": {
@@ -12494,11 +12478,11 @@
     },
     "/v1/partner/vguests/guest-invites/{inviteId}": {
       "delete": {
-        "description": "Revokes an invitation that has not been accepted. Requires both `partner:guests:read` (declared on the controller) and `partner:guests:pii:read` (on the handler) — the guard ANDs them.",
+        "description": "Revokes an invitation that has not been accepted. Requires both `partner:guests:read` (declared on the controller) and `partner:guests:pii:read` (on the handler) \u2014 the guard ANDs them.",
         "operationId": "guestInvitesPartner_cancelInvite",
         "parameters": [
           {
-            "description": "Internal numeric invitation id — not an external id. A non-integer value is rejected with 400 before the handler runs.",
+            "description": "Internal numeric invitation id \u2014 not an external id. A non-integer value is rejected with 400 before the handler runs.",
             "in": "path",
             "name": "inviteId",
             "required": true,
@@ -12576,7 +12560,7 @@
     },
     "/v1/partner/vguests/guest-invites/all": {
       "get": {
-        "description": "Every invitation for the brands and venues the credential can reach. Filters narrow that reach and can never widen it: ids outside your reach are dropped, and a filter that leaves nothing returns an empty list. Requires both `partner:guests:read` (declared on the controller) and `partner:guests:pii:read` (on the handler) — the guard ANDs them.",
+        "description": "Every invitation for the brands and venues the credential can reach. Filters narrow that reach and can never widen it: ids outside your reach are dropped, and a filter that leaves nothing returns an empty list. Requires both `partner:guests:read` (declared on the controller) and `partner:guests:pii:read` (on the handler) \u2014 the guard ANDs them.",
         "operationId": "guestInvitesPartner_listAll",
         "parameters": [
           {
@@ -12683,7 +12667,7 @@
     },
     "/v1/partner/windfall/guests/{hashedPmsGuestId}": {
       "get": {
-        "description": "Looks a guest up by the hash of their PMS guest id. Requires both `partner:guests:read` (declared on the controller) and `partner:guests:pii:read` (on the handler) — the guard ANDs them.",
+        "description": "Looks a guest up by the hash of their PMS guest id. Requires both `partner:guests:read` (declared on the controller) and `partner:guests:pii:read` (on the handler) \u2014 the guard ANDs them.",
         "operationId": "windfallPartner_getByGuestHash",
         "parameters": [
           {
@@ -12698,7 +12682,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The guest’s Windfall profile."
+            "description": "The guest\u2019s Windfall profile."
           },
           "401": {
             "content": {
@@ -12755,11 +12739,11 @@
     },
     "/v1/partner/windfall/members/{memberId}": {
       "get": {
-        "description": "Looks a member up by their internal numeric id. Requires both `partner:guests:read` (declared on the controller) and `partner:guests:pii:read` (on the handler) — the guard ANDs them.",
+        "description": "Looks a member up by their internal numeric id. Requires both `partner:guests:read` (declared on the controller) and `partner:guests:pii:read` (on the handler) \u2014 the guard ANDs them.",
         "operationId": "windfallPartner_getByMemberId",
         "parameters": [
           {
-            "description": "Internal numeric member id — not the external ULID used elsewhere on this surface. A non-integer value is rejected with 400 before the handler runs.",
+            "description": "Internal numeric member id \u2014 not the external ULID used elsewhere on this surface. A non-integer value is rejected with 400 before the handler runs.",
             "in": "path",
             "name": "memberId",
             "required": true,
@@ -12770,7 +12754,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The member’s Windfall profile."
+            "description": "The member\u2019s Windfall profile."
           },
           "400": {
             "content": {
@@ -12837,7 +12821,7 @@
     },
     "/v1/partner/windfall/reservations/{reservationId}": {
       "get": {
-        "description": "Premium signal for the guest on a reservation. Requires both `partner:guests:read` (declared on the controller) and `partner:guests:pii:read` (on the handler) — the guard ANDs them.",
+        "description": "Premium signal for the guest on a reservation. Requires both `partner:guests:read` (declared on the controller) and `partner:guests:pii:read` (on the handler) \u2014 the guard ANDs them.",
         "operationId": "windfallPartner_getByReservationId",
         "parameters": [
           {
@@ -12863,7 +12847,7 @@
         ],
         "responses": {
           "200": {
-            "description": "The reservation’s Windfall profile."
+            "description": "The reservation\u2019s Windfall profile."
           },
           "401": {
             "content": {
@@ -12920,7 +12904,7 @@
     },
     "/v1/partner/windfall/stats": {
       "get": {
-        "description": "Aggregate counts of how much of the guest base Windfall has matched. Requires both `partner:guests:read` (declared on the controller) and `partner:guests:pii:read` (on the handler) — the guard ANDs them.",
+        "description": "Aggregate counts of how much of the guest base Windfall has matched. Requires both `partner:guests:read` (declared on the controller) and `partner:guests:pii:read` (on the handler) \u2014 the guard ANDs them.",
         "operationId": "windfallPartner_getStats",
         "parameters": [],
         "responses": {
@@ -12982,7 +12966,7 @@
     },
     "/v1/public/partner/custom-loyalty/invite/send": {
       "post": {
-        "description": "Emails a sign-in link to a visitor of a partner-hosted custom loyalty page. The only unauthenticated endpoint on the partner surface: it is called by the partner’s own public page on behalf of a visitor, so it carries no credential. The organization is resolved from `host`, which must be a domain the partner has connected. Rate limited to 30 requests per 15 minutes.",
+        "description": "Emails a sign-in link to a visitor of a partner-hosted custom loyalty page. The only unauthenticated endpoint on the partner surface: it is called by the partner\u2019s own public page on behalf of a visitor, so it carries no credential. The organization is resolved from `host`, which must be a domain the partner has connected. Rate limited to 30 requests per 15 minutes.",
         "operationId": "partnerPageAuthPublic_send",
         "parameters": [],
         "requestBody": {

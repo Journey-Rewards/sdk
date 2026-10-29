@@ -15,3 +15,7 @@ const member = new JourneyMemberClient({accessToken:'clerk_test'});
 member.memberWallet.balance();
 // @ts-expect-error partner operations are isolated
 member.request('loyaltyProgramsPartner_list');
+
+// Core pagination DTOs accept integers; the old export mislabeled these as Object.
+void partner.pages.list({ query: { limit: 50, offset: 0 } });
+void partner.themeKits.list({ query: { limit: 100, offset: 0 } });

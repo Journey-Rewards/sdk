@@ -7,5 +7,15 @@
   "coreCommit": "a424e368a7e2849e17772a27c868ac79b4cbcd4e",
   "documentation": "https://docs.journey.com",
   "responseTyping": "Only response shapes present in the OpenAPI snapshot are typed. Undocumented success responses remain unknown; no fields are invented.",
-  "connectedVerification": "Local contract and transport fixtures do not establish connected account, tenancy, write or payment success."
+  "connectedVerification": "Local contract and transport fixtures do not establish connected account, tenancy, write or payment success.",
+  "normalizations": [
+    {
+      "change": "Correct pages/theme-kits list limit and offset from Object to integer, retaining existing bounds/defaults.",
+      "source": "Core main a424e368: ListPartnerPagesRequest and ListPartnerThemeKitsRequest use @IsInt and @Type(() => Number)."
+    },
+    {
+      "change": "Express the Unicode Cc control-character exclusion as equivalent U+0000-U+001F and U+007F-U+009F ranges for JSON Schema validator portability.",
+      "source": "AddPoolCodesRequest codes pattern; no validation policy change."
+    }
+  ]
 }

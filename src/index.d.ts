@@ -140,7 +140,7 @@ export interface Inputs {
 "loyaltyRuleAttributesPartner_list": {  };
 "membersPartner_listMembers": { query?: { "limit"?: number; "offset"?: number; "organizationId"?: string; "q"?: string } };
 "membersPartner_getMember": { path: { "externalId": string }; query?: { "organizationId"?: string } };
-"pagesPartner_list": { query: { "limit": (Schemas["Object"]); "offset": (Schemas["Object"]); "organizationId"?: string; "ownerEntityExternalId"?: string; "ownerEntityType"?: "brand" | "organization" | "property"; "pageType"?: "partner" | "loyalty_program_join" } };
+"pagesPartner_list": { query: { "limit": number; "offset": number; "organizationId"?: string; "ownerEntityExternalId"?: string; "ownerEntityType"?: "brand" | "organization" | "property"; "pageType"?: "partner" | "loyalty_program_join" } };
 "pagesPartner_get": { path: { "pageGroupId": string }; query?: { "organizationId"?: string; "state"?: "draft" | "archived" | "published" } };
 "pagesPartner_update": { path: { "pageGroupId": string }; query?: { "organizationId"?: string; "state"?: "draft" | "archived" | "published" }; body: Schemas["UpdatePartnerPageRequest"]; idempotencyKey: string };
 "pagesPartner_assignCustomDomain": { path: { "pageGroupId": string }; query?: { "organizationId"?: string; "state"?: "draft" | "archived" | "published" }; body: Schemas["AssignPartnerPageCustomDomainRequest"]; idempotencyKey: string };
@@ -160,7 +160,7 @@ export interface Inputs {
 "reservationsPartner_list": { query?: { "bookingStatus"?: "confirmed" | "canceled" | "inquiry" | "other"; "checkInFrom"?: string; "checkInTo"?: string; "cursor"?: string; "limit"?: number; "memberLinked"?: string; "offset"?: number; "organizationId"?: string; "propertyId"?: string; "propertyIds"?: Array<string>; "q"?: string } };
 "reservationsPartner_get": { path: { "reservationId": string }; query?: { "organizationId"?: string } };
 "scopePartner_getScope": { query?: { "organizationId"?: string } };
-"themeKitsPartner_list": { query: { "limit": (Schemas["Object"]); "offset": (Schemas["Object"]); "organizationId"?: string } };
+"themeKitsPartner_list": { query: { "limit": number; "offset": number; "organizationId"?: string } };
 "themeKitsPartner_remove": { path: { "entityExternalId": string; "entityType": "organization" | "brand" | "property" }; query: { "expectedVersion": number; "organizationId"?: string }; idempotencyKey: string };
 "themeKitsPartner_get": { path: { "entityExternalId": string; "entityType": "organization" | "brand" | "property" }; query?: { "organizationId"?: string } };
 "themeKitsPartner_put": { path: { "entityExternalId": string; "entityType": "organization" | "brand" | "property" }; query?: { "organizationId"?: string }; body: Schemas["PutPartnerThemeKitRequest"]; idempotencyKey: string };
