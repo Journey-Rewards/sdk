@@ -15,13 +15,13 @@ Official JavaScript/TypeScript and Python clients, plus the `journey` CLI, for h
 Node.js 22 or newer:
 
 ```sh
-npm install @journeyrewards/sdk@^2
+npm install @journeyrewards/sdk@^2.0.2
 ```
 
 Python 3.10 or newer:
 
 ```sh
-python -m pip install journeyrewards-sdk
+python -m pip install "journeyrewards-sdk>=2.0.2,<3"
 ```
 
 For an unpublished checkout, use `npm pack` and install the resulting tarball, or `python -m pip install .`. Registry availability is verified as part of the [release process](https://github.com/Journey-Rewards/sdk/blob/main/RELEASING.md); a source checkout is not evidence of a published version.
@@ -42,7 +42,7 @@ const programs = await journey.loyaltyPrograms.list();
 const program = await journey.loyaltyPrograms.get({path: {externalId: 'your-program-id'}});
 ```
 
-Alternatively, pass `accessToken` for an approved WorkOS partner JWT. Exactly one partner credential is accepted. Organization and resource authorization remain enforced by Core; query parameters do not grant cross-organization access.
+Alternatively, pass `accessToken` for an approved WorkOS partner JWT. Exactly one partner credential is accepted. WorkOS membership alone is insufficient: Core must also have the organization mapping and the user’s recorded resource scope. Organization and resource authorization remain enforced by Core; query parameters do not grant cross-organization access.
 
 ```python
 import os
@@ -81,14 +81,14 @@ try {
 }
 ```
 
-Python raises `JourneyError` with `status`, `code`, `retry_after`, `request_id`, `details`, and `payload`. Both clients reject redirects so credentials are not forwarded to another endpoint. HTTPS is required except for loopback development fixtures.
+Python raises `JourneyError` with `status`, `code`, `retry_after`, `request_id`, `details`, and `payload`. Version 2.0.2 hides stored credentials from ordinary client inspection/serialization and redacts exact credential values echoed in error diagnostics. Successful API results and other personal information in errors are not redacted. Both clients reject redirects so credentials are not forwarded to another endpoint. HTTPS is required except for loopback development fixtures.
 
 ## CLI
 
 ```sh
-npx --package @journeyrewards/sdk@^2 journey --help
-npx --package @journeyrewards/sdk@^2 journey partner list
-npx --package @journeyrewards/sdk@^2 journey partner call loyaltyProgramsPartner_list --staging
+npx --package @journeyrewards/sdk@^2.0.2 journey --help
+npx --package @journeyrewards/sdk@^2.0.2 journey partner list
+npx --package @journeyrewards/sdk@^2.0.2 journey partner call loyaltyProgramsPartner_list --staging
 ```
 
 Supply credentials through your environment or secret manager, never CLI flags:
@@ -109,6 +109,8 @@ const member = new JourneyMemberClient({accessToken: clerkMemberJwt});
 const profile = await member.memberProfile.get();
 const balance = await member.memberWallet.balance();
 ```
+
+Complete the normal Clerk sign-in and Core member provisioning flow (`POST /v1/members/me/auth/validate`) before using member reads. A new Clerk identity alone does not provision a Core member. Use a token and Core origin from the same environment.
 
 The member client exposes profile, membership, marketing consent, wallet, and wallet balance reads. A partner key or MCP OAuth token is not a substitute for a Clerk JWT. The SDK deliberately does not expose member financial writes or presume that all member mutations support header-based idempotency.
 
@@ -137,3 +139,7 @@ The full browser site remains available for travel browsing and booking. Display
 Run `npm run generate`, `npm test`, and `npm run test:types`. Tests exercise actual loopback HTTP transport in JavaScript, Python, and the CLI, including isolation, idempotency, conflicts, timeouts, redirects, and typed errors. These fixtures do not establish connected account, tenant, booking, or payment success. A scoped sandbox smoke test is required before using a new integration operationally.
 
 SDK releases use semantic versioning. REST v1 paths and the MCP v1 header are separate from SDK major version 2. Breaking SDK changes require a new major release. API retirement notices and migration instructions will be published in the documentation before an announced retirement; no fixed notice-period SLA is offered by this package.
+
+## Security
+
+See [SECURITY.md](https://github.com/Journey-Rewards/sdk/blob/main/SECURITY.md) for credential handling, server authorization boundaries, and reporting. Use version 2.0.2 or newer; 2.0.0–2.0.1 could expose stored credentials when serializing a client object.

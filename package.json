@@ -1,6 +1,6 @@
 {
   "name": "@journeyrewards/sdk",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Official Journey SDK and CLI for hospitality loyalty, member APIs and MCP",
   "type": "module",
   "license": "MIT",
@@ -21,7 +21,8 @@
     "README.md",
     "MIGRATION.md",
     "LICENSE",
-    "contracts/provenance.json"
+    "contracts/provenance.json",
+    "SECURITY.md"
   ],
   "scripts": {
     "generate": "node scripts/generate.mjs",

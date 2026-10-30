@@ -47,3 +47,26 @@ for name, code in [("fail", "MEMBER_AUTH_REQUIRED"), ("rpc-fail", -32601), ("wro
     except JourneyError as error:
         assert error.code == code
 print("Python transport fixtures passed")
+
+# Accidental diagnostics must not disclose credentials. Explicit memory access
+# by code in the same process is outside this guarantee.
+import json, pickle
+for current, secret in [(client,"jny_python"),(member,"clerk_py"),(mcp,"mcp_py")]:
+    assert secret not in repr(current)
+    for serialize in [vars, pickle.dumps]:
+        try:
+            serialize(current)
+            raise AssertionError("Credential-bearing client was serialized")
+        except TypeError:
+            pass
+for mode in ["echo-secret", "invalid-secret"]:
+    try:
+        client.request("loyaltyProgramsPartner_list", query={"organizationId":mode})
+        raise AssertionError("Expected HTTP error")
+    except JourneyError as error:
+        assert "jny_python" not in str(error) + repr(vars(error))
+try:
+    mcp.call_tool("echo-secret")
+    raise AssertionError("Expected MCP error")
+except JourneyError as error:
+    assert "mcp_py" not in str(error) + repr(vars(error))

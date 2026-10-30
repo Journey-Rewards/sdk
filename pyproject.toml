@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "journeyrewards-sdk"
-version = "2.0.1"
+version = "2.0.2"
 description = "Official Journey SDK for hospitality loyalty, member APIs and MCP"
 readme = "README.md"
 requires-python = ">=3.10"

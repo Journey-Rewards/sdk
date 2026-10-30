@@ -2,7 +2,7 @@ import { test, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
+import { promisify, inspect } from 'node:util';
 import { fileURLToPath } from 'node:url';
 import { JourneyClient, JourneyMemberClient, JourneyMcpClient, JourneyError, operations } from '../src/index.mjs';
 
@@ -18,12 +18,16 @@ before(async () => {
     const url = new URL(req.url, 'http://localhost');
     const answer = (status, value, headers = {}) => { res.writeHead(status, { 'Content-Type': 'application/json', ...headers }); res.end(JSON.stringify(value)); };
     const mode = url.searchParams.get('organizationId');
+    const secret = req.headers['x-api-key'] || req.headers.authorization?.replace(/^Bearer /, '');
+    if (mode === 'echo-secret') return answer(401, {message:`Rejected ${secret}`,code:'unauthorized',details:{credential:secret},[secret]:secret}, {'X-Request-Id':secret,'Retry-After':secret});
+    if (mode === 'invalid-secret') { res.writeHead(502, {'Retry-After':secret}); return res.end('private '+secret); }
     if (mode === 'redirect') return answer(307, {}, { Location: baseUrl + '/credential-leak' });
     if (mode === 'slow') return setTimeout(() => answer(200, {}), 200);
     if (mode === 'broken') { res.writeHead(200, { 'Content-Type': 'application/json' }); res.write('{'); return setTimeout(() => res.destroy(), 5); }
     if (mode === 'invalid') { res.writeHead(502); return res.end('<html>Gateway failure</html>'); }
     if (mode === '429' || mode === '503') return answer(Number(mode), {type:'TooManyRequestsException', code:Number(mode), message:'Try later', errors:[{field:'request'}]}, {'Retry-After':'17','X-Request-Id':'req_fixture'});
     if (url.pathname === '/api/mcp') {
+      if (body.params?.name === 'echo-secret') return answer(200, {jsonrpc:'2.0',id:body.id,result:{isError:true,structuredContent:{error:{code:'unauthorized',message:`Rejected ${secret}`}},content:[{type:'text',text:secret}]}});
       if (body.params?.name === 'fail') return answer(200, {jsonrpc:'2.0',id:body.id,result:{isError:true,structuredContent:{error:{code:'MEMBER_AUTH_REQUIRED',message:'Connect a member account'}}}});
       if (body.params?.name === 'rpc-fail') return answer(200, {jsonrpc:'2.0',id:body.id,error:{code:-32601,message:'Method not found'}});
       if (body.params?.name === 'wrong-id') return answer(200, {jsonrpc:'2.0',id:body.id+1,result:{}});
@@ -119,7 +123,7 @@ test('MCP keeps OAuth separate, sends API version, checks RPC and tool errors', 
 
 test('CLI lists without credentials, prints version, and requires explicit writes', async () => {
   const env={...process.env,JOURNEY_API_URL:baseUrl,JOURNEY_API_KEY:'jny_cli',JOURNEY_PARTNER_TOKEN:''};
-  assert.equal((await exec(process.execPath,['src/cli.mjs','--version'],{cwd:root,env})).stdout.trim(),'2.0.1');
+  assert.equal((await exec(process.execPath,['src/cli.mjs','--version'],{cwd:root,env})).stdout.trim(),'2.0.2');
   assert.equal(JSON.parse((await exec(process.execPath,['src/cli.mjs','member','list'],{cwd:root,env})).stdout).length,5);
   const start=seen.length;
   await assert.rejects(exec(process.execPath,['src/cli.mjs','partner','call','loyaltyProgramsPartner_create'],{cwd:root,env}),e=>e.stderr.includes('--confirm')&&!e.stderr.includes('jny_cli'));
@@ -134,7 +138,7 @@ test('Python transport runs the same authentication, replay, error and MCP fixtu
   assert.match(stdout,/Python transport fixtures passed/);
   assert.ok(seen.length > start);
   for (const request of seen.slice(start)) {
-    assert.equal(request.headers['user-agent'], 'JourneySDK-Python/2.0.1 (+https://github.com/Journey-Rewards/sdk)');
+    assert.equal(request.headers['user-agent'], 'JourneySDK-Python/2.0.2 (+https://github.com/Journey-Rewards/sdk)');
   }
   assert.ok(!seen.some(r=>r.url==='/credential-leak'));
 });
@@ -154,4 +158,34 @@ test('unsupported streamed uploads never make a misleading JSON request', async 
     assert.equal(operations[id], undefined);
     await assert.rejects(client.request(id,{idempotencyKey:'upload'}), /Unknown partner operation/);
   }
+});
+
+
+test('credentials stay out of client serialization, inspect output and error diagnostics', async () => {
+  const fixtures = [
+    [new JourneyClient({apiKey:'jny_redaction_fixture',baseUrl}), 'jny_redaction_fixture'],
+    [new JourneyClient({accessToken:'workos_redaction_fixture',baseUrl}), 'workos_redaction_fixture'],
+    [new JourneyMemberClient({accessToken:'clerk_redaction_fixture',baseUrl}), 'clerk_redaction_fixture'],
+    [new JourneyMcpClient({accessToken:'mcp_redaction_fixture',endpoint:baseUrl+'/api/mcp'}), 'mcp_redaction_fixture'],
+  ];
+  for (const [client, secret] of fixtures) {
+    for (const output of [JSON.stringify(client), inspect(client), inspect(client,{showHidden:true})]) assert.ok(!output.includes(secret));
+  }
+  for (const [client, secret] of fixtures.slice(0,2)) {
+    for (const mode of ['echo-secret','invalid-secret']) await assert.rejects(client.loyaltyPrograms.list({query:{organizationId:mode}}),error=>{
+      assert.ok(![error.message,JSON.stringify(error),inspect(error)].join('').includes(secret));
+      assert.ok(error.status >= 400);
+      return true;
+    });
+  }
+  await assert.rejects(fixtures[3][0].callTool('echo-secret'),error=>!JSON.stringify(error).includes(fixtures[3][1])&&!error.message.includes(fixtures[3][1]));
+});
+
+test('CLI malformed JSON never echoes the input contents', async () => {
+  const {spawn}=await import('node:child_process');
+  const child=spawn(process.execPath,['src/cli.mjs','partner','call','loyaltyProgramsPartner_list','--input','-'],{cwd:root});
+  let output='';child.stderr.on('data',chunk=>output+=chunk);child.stdout.on('data',chunk=>output+=chunk);
+  child.stdin.end('private_input_fixture_is_not_json');
+  const code=await new Promise(resolve=>child.on('close',resolve));
+  assert.equal(code,1);assert.match(output,/Input must be valid JSON/);assert.ok(!output.includes('private_input_fixture'));
 });

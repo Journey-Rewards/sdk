@@ -22,7 +22,22 @@ function credential(value, name) {
   return value;
 }
 
+function redact(value, secrets) {
+  if (typeof value === 'string') {
+    for (const secret of secrets) if (secret) value = value.replaceAll(secret, '[REDACTED]');
+    return value;
+  }
+  if (Array.isArray(value)) return value.map(item => redact(item, secrets));
+  if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([key, item]) => [redact(key, secrets), redact(item, secrets)]));
+  return value;
+}
+
+function authSecrets(headers) {
+  return [headers['X-API-Key'], headers.Authorization?.replace(/^Bearer /, '')].filter(Boolean);
+}
+
 async function send(url, options, timeoutMs) {
+  const secrets = authSecrets(options.headers);
   let response;
   try {
     response = await fetch(url, { ...options, redirect: 'error', signal: AbortSignal.timeout(timeoutMs) });
@@ -34,23 +49,27 @@ async function send(url, options, timeoutMs) {
   catch (cause) { throw new JourneyError('Journey response was interrupted. The outcome may be unknown; no automatic retry was attempted.', { status: response.status, code: 'transport_error', cause }); }
   let payload;
   try { payload = text ? JSON.parse(text) : undefined; }
-  catch { throw new JourneyError('Journey returned a non-JSON response.', { status: response.status, code: 'invalid_response', retryAfter: response.headers.get('retry-after') }); }
+  catch { throw new JourneyError('Journey returned a non-JSON response.', { status: response.status, code: 'invalid_response', retryAfter: redact(response.headers.get('retry-after'), secrets) }); }
   if (!response.ok) {
+    payload = redact(payload, secrets);
     const error = payload?.error && typeof payload.error === 'object' ? payload.error : payload;
     throw new JourneyError(typeof error?.message === 'string' ? error.message : `Journey HTTP ${response.status}`, {
       status: response.status, code: error?.code ?? response.status, details: error?.details ?? error?.errors,
-      retryAfter: response.headers.get('retry-after'), requestId: response.headers.get('x-request-id'), payload,
+      retryAfter: redact(response.headers.get('retry-after'), secrets), requestId: redact(response.headers.get('x-request-id'), secrets), payload,
     });
   }
   return payload;
 }
 
 class RestClient {
+  #headers;
+
   constructor(surface, headers, { baseUrl: origin = 'https://api-prd.cf.journey.com', timeoutMs = 30_000 } = {}) {
     const url = baseUrl(origin);
     if (url.pathname !== '/') throw new TypeError('Core baseUrl is an origin without /v1; operation paths include the version.');
     validateTimeout(timeoutMs);
-    Object.assign(this, { surface, baseUrl: url.origin, headers, timeoutMs });
+    this.#headers = Object.freeze({ ...headers });
+    Object.assign(this, { surface, baseUrl: url.origin, timeoutMs });
     for (const [id, operation] of Object.entries(operations)) {
       if (operation.surface !== surface) continue;
       const [resource, action] = id.split('_');
@@ -81,7 +100,7 @@ class RestClient {
       }
     }
     for (const name of operation.requiredQuery) if (!url.searchParams.has(name)) throw new TypeError(`Required query parameter: ${name}`);
-    const headers = { Accept: 'application/json', ...this.headers };
+    const headers = { Accept: 'application/json', ...this.#headers };
     const write = !['GET', 'HEAD'].includes(operation.method);
     if (write) {
       if (typeof idempotencyKey !== 'string' || !/^[\x21-\x7e]{1,255}$/.test(idempotencyKey)) throw new TypeError('Partner writes require an explicit Idempotency-Key (1–255 visible ASCII characters). Reuse it only for the same operation and payload.');
@@ -110,16 +129,20 @@ export class JourneyMemberClient extends RestClient {
 }
 
 export class JourneyMcpClient {
+  #accessToken;
+
   constructor({ endpoint = 'https://www.journey.com/api/mcp', accessToken, timeoutMs = 30_000 } = {}) {
     validateTimeout(timeoutMs);
-    Object.assign(this, { endpoint: baseUrl(endpoint).href, accessToken: accessToken ? credential(accessToken, 'MCP OAuth accessToken') : undefined, timeoutMs, nextId: 0 });
+    this.#accessToken = accessToken ? credential(accessToken, 'MCP OAuth accessToken') : undefined;
+    Object.assign(this, { endpoint: baseUrl(endpoint).href, timeoutMs, nextId: 0 });
   }
   async request(method, params = {}) {
     const id = ++this.nextId;
-    const payload = await send(this.endpoint, { method: 'POST', headers: {
+    let payload = await send(this.endpoint, { method: 'POST', headers: {
       'Content-Type': 'application/json', Accept: 'application/json, text/event-stream', 'Journey-API-Version': '1',
-      ...(this.accessToken ? { Authorization: `Bearer ${this.accessToken}` } : {}),
+      ...(this.#accessToken ? { Authorization: `Bearer ${this.#accessToken}` } : {}),
     }, body: JSON.stringify({ jsonrpc: '2.0', id, method, params }) }, this.timeoutMs);
+    if (payload?.jsonrpc !== '2.0' || payload.id !== id || payload.error || payload.result?.isError) payload = redact(payload, [this.#accessToken]);
     if (payload?.jsonrpc !== '2.0' || payload.id !== id) throw new JourneyError('Invalid JSON-RPC response.', { code: 'invalid_response', payload });
     if (payload.error) throw new JourneyError(payload.error.message, { code: payload.error.code, payload });
     if (payload.result?.isError) {

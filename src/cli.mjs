@@ -26,7 +26,7 @@ try {
     help: { type: 'boolean', short: 'h' }, version: { type: 'boolean' }, input: { type: 'string' },
     'idempotency-key': { type: 'string' }, confirm: { type: 'boolean' }, staging: { type: 'boolean' },
   } });
-  if (values.version) console.log('2.0.1');
+  if (values.version) console.log('2.0.2');
   else if (values.help || !positionals.length) console.log(help);
   else {
     const [surface, command, id, ...extra] = positionals;
@@ -34,7 +34,12 @@ try {
     if (command === 'list' && surface !== 'mcp') {
       console.log(JSON.stringify(Object.entries(operations).filter(([,op])=>op.surface===surface).map(([operationId,op])=>({operationId,...op})),null,2));
     } else {
-      const input = values.input ? JSON.parse(readFileSync(values.input === '-' ? 0 : values.input,'utf8')) : {};
+      let input = {};
+      if (values.input) {
+        const raw = readFileSync(values.input === '-' ? 0 : values.input, 'utf8');
+        try { input = JSON.parse(raw); }
+        catch { throw new Error('Input must be valid JSON.'); }
+      }
       if (!input || typeof input !== 'object' || Array.isArray(input)) throw new Error('Input must be a JSON object.');
       const baseUrl = process.env.JOURNEY_API_URL || (values.staging ? 'https://api-stg.cf.journey.com' : undefined);
       let result;
