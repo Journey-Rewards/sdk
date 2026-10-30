@@ -11,7 +11,7 @@ from urllib.parse import quote, urlencode, urlsplit
 from urllib.request import Request, HTTPRedirectHandler, build_opener
 from http.client import HTTPException
 
-__version__ = "2.0.0"
+__version__ = "2.0.1"
 operations = json.loads(files(__package__).joinpath("operations.json").read_text())
 _UNSET = object()
 
@@ -49,7 +49,10 @@ def _credential(value: str | None, label: str) -> str:
 
 def _send(url: str, method: str, headers: dict, body: Any, timeout: float) -> Any:
     data = None if body is _UNSET else json.dumps(body, allow_nan=False).encode()
-    request = Request(url, data=data, headers=headers, method=method)
+    request = Request(url, data=data, headers={
+        "User-Agent": f"JourneySDK-Python/{__version__} (+https://github.com/Journey-Rewards/sdk)",
+        **headers,
+    }, method=method)
     try:
         response = build_opener(_NoRedirect).open(request, timeout=timeout)
     except HTTPError as error:

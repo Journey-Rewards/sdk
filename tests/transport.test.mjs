@@ -119,7 +119,7 @@ test('MCP keeps OAuth separate, sends API version, checks RPC and tool errors', 
 
 test('CLI lists without credentials, prints version, and requires explicit writes', async () => {
   const env={...process.env,JOURNEY_API_URL:baseUrl,JOURNEY_API_KEY:'jny_cli',JOURNEY_PARTNER_TOKEN:''};
-  assert.equal((await exec(process.execPath,['src/cli.mjs','--version'],{cwd:root,env})).stdout.trim(),'2.0.0');
+  assert.equal((await exec(process.execPath,['src/cli.mjs','--version'],{cwd:root,env})).stdout.trim(),'2.0.1');
   assert.equal(JSON.parse((await exec(process.execPath,['src/cli.mjs','member','list'],{cwd:root,env})).stdout).length,5);
   const start=seen.length;
   await assert.rejects(exec(process.execPath,['src/cli.mjs','partner','call','loyaltyProgramsPartner_create'],{cwd:root,env}),e=>e.stderr.includes('--confirm')&&!e.stderr.includes('jny_cli'));
@@ -129,8 +129,13 @@ test('CLI lists without credentials, prints version, and requires explicit write
 });
 
 test('Python transport runs the same authentication, replay, error and MCP fixtures', async () => {
+  const start = seen.length;
   const {stdout}=await exec(process.env.PYTHON || 'python3',['tests/python_transport.py',baseUrl],{cwd:root,env:{...process.env,PYTHONPATH:root+'python'}});
   assert.match(stdout,/Python transport fixtures passed/);
+  assert.ok(seen.length > start);
+  for (const request of seen.slice(start)) {
+    assert.equal(request.headers['user-agent'], 'JourneySDK-Python/2.0.1 (+https://github.com/Journey-Rewards/sdk)');
+  }
   assert.ok(!seen.some(r=>r.url==='/credential-leak'));
 });
 

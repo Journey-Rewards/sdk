@@ -1,6 +1,6 @@
 {
   "contractVersion": "1",
-  "sdkVersion": "2.0.0",
+  "sdkVersion": "2.0.1",
   "partnerOpenApiSource": "Journey-Rewards/api#1268@20b5c59035c13a62deca0953f3a4602a2cd70646",
   "partnerOpenApiStatus": "Export proposal remains open; this is the existing public documentation snapshot, not an export from main.",
   "routeVerification": "All 110 documented routes matched Core main controller declarations, including 109 authenticated partner operations. The public invite mutation is excluded from this SDK.",

@@ -26,7 +26,7 @@ try {
     help: { type: 'boolean', short: 'h' }, version: { type: 'boolean' }, input: { type: 'string' },
     'idempotency-key': { type: 'string' }, confirm: { type: 'boolean' }, staging: { type: 'boolean' },
   } });
-  if (values.version) console.log('2.0.0');
+  if (values.version) console.log('2.0.1');
   else if (values.help || !positionals.length) console.log(help);
   else {
     const [surface, command, id, ...extra] = positionals;
